@@ -20,6 +20,9 @@ body{
     width: 90%; /* Ширина блока */
     height: 50%; /* Высота блока */
     border: solid 1px rgb(221, 115, 0);
+
+    display: flex;
+    flex-direction: row;
 }
 
 .slider {
