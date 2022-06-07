@@ -5,73 +5,69 @@ images.forEach((image, idx) => {
   image.style.backgroundImage = `url(./images/${idx+1}.jpg)`
 })
 
+// Scroll update
 let doc = window.document,
     slider = doc.querySelector('.js-slider'),
     items = doc.querySelectorAll('.js-item'),
     clones = [],
     disableScroll = false,
     scrollWidth = 0,
+    scrollHeight = 0,
     scrollPos = 0,
     clonesWidth = 0
 
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // Позиция по горизонтали
 function getScrollPos () {
-  return (slider.pageXOffset || slider.scrollLeft) - (slider.clientLeft || 0)
+  return (slider.pageXOffset || slider.scrollLeft) - (slider.clientLeft || 0);
 }
 
 function setScrollPos (pos) {
-  slider.scrollLeft = pos
+  slider.scrollLeft = pos;
 }
 
 // Ширина копий элементов
 function getClonesWidth () {
-  clonesWidth = 0
+  clonesWidth = 0;
   Array.from(clones, clone => {
-    clonesWidth = clonesWidth + clone.offsetWidth
+    clonesWidth = clonesWidth + clone.offsetWidth;
   })
-  return clonesWidth
+  return clonesWidth;
 }
 
-// ОСНОВНЫЕ ФУНКЦИИ
-// Пересчет
 function reCalc () {
-  scrollPos = getScrollPos()
-  scrollWidth = slider.scrollWidth
-  clonesWidth = getClonesWidth()
-  
+  scrollPos = getScrollPos();
+  scrollWidth = slider.scrollWidth;
+  clonesWidth = getClonesWidth();
+
   if (scrollPos <= 0) {
-    setScrollPos(1)
+    setScrollPos(1);
   }
 }
 
 // Бесконечная прокрутка
 function scrollUpdate () {
   if (!disableScroll) {
-    scrollPos = getScrollPos()
+    scrollPos = getScrollPos();
   
     if (clonesWidth + scrollPos >= scrollWidth) {
       // Прокрутка влево, когда доберется до правого края
-      setScrollPos(1)
+      setScrollPos(1);
       disableScroll = true
     } else if (scrollPos <= 0) {
       // Прокрутка вправо, когда доберется до левого края
-      setScrollPos(scrollWidth - clonesWidth)
-      disableScroll = true
+      setScrollPos(scrollWidth - clonesWidth);
+      disableScroll = true;
     }
   }
 
   if (disableScroll) {
     window.setTimeout(function () {
-      disableScroll = false
+      disableScroll = false;
     }, 40)
   }
 }
 
-////////////////////////////////////////////////////////////////////////
 // Draggable slider
-//////////////////////////////////////////////////////////////////////
-
 let isDown = false;
 let startX;
 let scrollLeft;
@@ -91,7 +87,7 @@ const start = (e) => {
 }
 
 const move = (e) => {
-  scrollPos = getScrollPos()
+  scrollPos = getScrollPos();
 	if(!isDown) return;
   e.preventDefault(); // предотвращение события
   const x = e.pageX || e.touches[0].pageX - slider.offsetLeft;
@@ -112,36 +108,61 @@ const move = (e) => {
   }
 }
 
+// Wheel move
+let scrollWheel = slider.scrollLeft;	
+
+function wheelMove (ev) {
+  scrollPos = getScrollPos();
+
+  let what = ev.deltaY;
+  scrollWheel = slider.scrollLeft;	
+  console.log(what)
+  if (what < 0){
+    console.log('скрол вверх')
+    slider.scrollLeft = scrollWheel - 90;
+  }
+  else if (what > 0 ){
+    console.log('скрол вниз')
+    slider.scrollLeft = scrollWheel + 90;
+  }
+}
+
 // Выполняется при загрузке страницы
 function onLoad () {
 
   Array.from(items, item => {
-    const clone = item.cloneNode(true)
-    slider.appendChild(clone)
-    clone.classList.add('js-clone')
+    const clone = item.cloneNode(true);
+    slider.appendChild(clone);
+    clone.classList.add('js-clone');
   })
 
-  clones = slider.querySelectorAll('.js-clone')
+  clones = slider.querySelectorAll('.js-clone');
   
-  reCalc()
-  
+  reCalc();
+
   slider.addEventListener('scroll', function () {
-    window.requestAnimationFrame(scrollUpdate)
+    window.requestAnimationFrame(scrollUpdate);
   }, false)
 
   window.addEventListener('resize', function () {
-    window.requestAnimationFrame(reCalc)
+    window.requestAnimationFrame(reCalc);
   }, false)
 
+  // Управление мышью и слайдером
   slider.addEventListener('mousedown', start);
 	slider.addEventListener('touchstart', start);
+  //slider.addEventListener('keydown', move);
 
 	slider.addEventListener('mousemove', move); // работает при каждом сдвиге курсора на пиксель
 	slider.addEventListener('touchmove', move);
+  slider.addEventListener('keypress', move);
+
+  slider.addEventListener('wheel', wheelMove); // колесо мышки (плюс слайдер вверх/вниз)
 
 	slider.addEventListener('mouseleave', end);
 	slider.addEventListener('mouseup', end);
 	slider.addEventListener('touchend', end);
+  //slider.addEventListener('keyup', end);
 }
 
-window.onload = onLoad
+window.onload = onLoad;
